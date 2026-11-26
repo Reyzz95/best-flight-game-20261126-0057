@@ -25,6 +25,17 @@ cpSync(join(here, 'game'), join(out, 'game'), { recursive: true });
 mkdirSync(join(out, 'screenshots'), { recursive: true });
 if (existsSync(join(here, 'screenshots'))) cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true });
 
+import { statSync } from 'node:fs';
+const shotsList = ['1-start.jpg', '2-play.jpg', '3-end.jpg'];
+const shotSizes = shotsList.map(name => {
+  const p = join(out, 'screenshots', name);
+  if (!existsSync(p)) throw new Error(`Missing screenshot: ${name}`);
+  const size = statSync(p).size;
+  if (size <= 10000) throw new Error(`Screenshot too small: ${name} (${size} bytes)`);
+  return size;
+});
+console.log(`Verified screenshots: ${shotsList.join(', ')} with sizes: ${shotSizes.join(', ')} bytes`);
+
 // The scorer's own caps (reference/gate.json): only text_max_bytes shapes the bytes; the others refuse an entry the
 // scorer would refuse (more than 4 screenshots or one over 256 KiB; more than 993 files in game/ or 48 MiB of game
 // files, in all, or a path under game/ over 1000 bytes: game/ counts beside /output's own 1000-entry cap, its
